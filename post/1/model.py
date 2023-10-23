@@ -9,14 +9,17 @@ from typing import List
 from triton_python_backend_utils import get_output_config_by_name, triton_string_to_numpy, get_input_config_by_name, get_input_tensor_by_name
 from c_python_backend_utils import Tensor, InferenceResponse, InferenceRequest
 
-classes = [line.rstrip('\n') for line in open(os.path.dirname(__file__) + '/coco_classes.txt')]    
+classes = [
+    line.rstrip('\n')
+    for line in open(f'{os.path.dirname(__file__)}/coco_classes.txt')
+]    
 
 
 def rle_encode(im_arr):
     height, width = im_arr.shape
     flat = im_arr.T.flatten()
     switches = np.nonzero(np.append(flat, 0) != np.append(0, flat))[0]
-    rle_arr = (np.append(switches, switches[-1]) - np.append(0, switches))[0:-1]
+    rle_arr = (np.append(switches, switches[-1]) - np.append(0, switches))[:-1]
     remaining = width * height - np.sum(rle_arr)
     if remaining > 0:
         rle_arr = np.append(rle_arr, remaining)
@@ -151,20 +154,20 @@ class TritonPythonModel(object):
                 rs_scores.append(image_scores)
                 rs_rles.append(image_rles)
 
-            max_boxes = max([len(i) for i in rs_boxes])
+            max_boxes = max(len(i) for i in rs_boxes)
             for b in rs_boxes:
                 for _ in range(max_boxes - len(b)):
                     b.append([0, 0, 0, 0])
-            max_labels = max([len(i) for i in rs_labels])
+            max_labels = max(len(i) for i in rs_labels)
             for lb in rs_labels:
                 for _ in range(max_labels - len(lb)):
                     lb.append("")
-            max_scores = max([len(i) for i in rs_scores])
+            max_scores = max(len(i) for i in rs_scores)
             for sc in rs_scores:
                 for _ in range(max_scores - len(sc)):
                     sc.append(0)
 
-            max_rles = max([len(i) for i in rs_rles])
+            max_rles = max(len(i) for i in rs_rles)
             for rles in rs_rles:
                 for _ in range(max_rles - len(rles)):
                     rles.append("")
